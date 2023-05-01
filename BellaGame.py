@@ -9,25 +9,23 @@
 # meArm.py and kinematics.py and grip.py
 # in the same folder as this program
 #
-# Urs Utzinger 4/14/2023
-# Last edited by Bella Klein 4/24/2023
+# Template: Urs Utzinger 4/14/2023
+# Edited by Bella Klein 4/26/2023
 
 display_debug = True
 text_debug = False
 ############
 # Camera setup was removed
 ############
-
+import cv2
 
 #############
 # Buttons and Switch
 #############
-
 # Importing libraries
 
 import time             # import timing
 import RPi.GPIO as GPIO # import Raspberry Pi input out put
-import cv2
 
 # Global Variables
 # Buttons
@@ -54,16 +52,17 @@ arm.begin(0,0x70) #
 
 # Defense
 #########
-xl = -65  # x coordinate of left position
-yl = 165  # y coordinate of left position
-zl = -10  # z coordinate of left position
-
-xr =  65  # x coordinate of right position
-yr = 165  # y coordinate of right position
-zr = -10  # z coordinate of right position
-
+#x,y,z coordinates of left defence position
+xl = -65
+yl = 160
+zl = 10
+#x,y,z coordinates of right defence position
+xr = 65
+yr = 160
+zr = 10
+ 
 # Throwing
-#########
+##############
 ready_toThrow =  False
 
 # Idle Position
@@ -72,13 +71,25 @@ yi = 170 # y coordinate
 zi = -25 # z coordinate
 # Start Position
 xs = 100 # x coordinate
-ys =  80 # y coordinate
+ys =  70 # y coordinate
 zs = 140 # z coordinate
 # End Position
-xe = -55 # x coordinate
-ye = 170 # y coordinate
-ze =  80 # z coordinate
+xe = -60 # x coordinate
+ye = 145 # y coordinate
+ze = 100 # z coordinate
 
+############
+# Position Filtering, remove outlayers
+############
+# import collections
+# import statistics
+# this will slow response down, perhaps better to not filter
+# pos_x = collections.deque(maxlen=3) # if you want to take median of 3 locations. 
+# pos_y = collections.deque(maxlen=3)
+# pos_x.append(x_offset) # initialize
+# pos_y.append(z_offset)
+#pos_x = x_offset # No position filtering
+#pos_y = z_offset
 
 # Main Loop
 #########################################################
@@ -97,28 +108,22 @@ while (not stop):
         ####################################################
         # Defense
         ####################################################
-        # arm moves side to side at the bottom of the goal to stop  
-        # opponent's ball from hitting the field
         while (switch_state):
             ready_toThrow = False
-            arm.gotoPoint(0, 165, -10)
-            arm.gotoPoint( xr, yr, zr)
-            arm.gotoPoint( xl, yl, zl)
+            arm.gotoPoint(0, 160, 10)
+            arm.gotoPoint(xr, yr, zr)
+            arm.gotoPoint(xl, yl, zl)
             switch_state = GPIO.input(switch_pin)
-        
-        
         
     else:
         ####################################################
         # Attack
         ####################################################
-        # moves arm to starting position if not already there
-        if ready_toThrow == False: 
+        if ready_toThrow == False:
             arm.goDirectlyTo(arm.x,arm.y-25,arm.z)
-            time.sleep(0.5)
+            time.sleep(0.9)
             arm.goDirectlyTo(xi,yi,zi)
             ready_toThrow = True
-        # once button is pushed, runs the throw sequence
         if start_state and ready_toThrow:
             # Ready 
             # Set ...
@@ -130,7 +135,7 @@ while (not stop):
             # Relax
             arm.gotoPoint(xi,yi,zi)
 
-    # Check if user wantS to quit
+    # Check if user wants to quit
     if display_debug:
         try:
             if (cv2.waitKey(1) & 0xFF == ord('q')) : stop = True
@@ -139,3 +144,4 @@ while (not stop):
 # Clean up
 cv2.destroyAllWindows()
 GPIO.cleanup()
+

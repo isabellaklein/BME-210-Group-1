@@ -120,20 +120,21 @@ while (not stop):
         # Attack
         ####################################################
         if ready_toThrow == False:
+            #moves to start position, making sure not to hit the goal
             arm.goDirectlyTo(arm.x,arm.y-25,arm.z)
-            time.sleep(0.9)
-            arm.goDirectlyTo(xi,yi,zi)
+            time.sleep(0.9) 
+            arm.goDirectlyTo(xi,yi,zi) 
             ready_toThrow = True
         if start_state and ready_toThrow:
             # Ready 
             # Set ...
             arm.gotoPoint(xs,ys,zs)
-            time.sleep(0.5)
+            time.sleep(0.5) # makes sure ball is settled on the holder before throwing
             # Go!!
-            arm.goDirectlyTo(xe,ye,ze)
+            arm.goDirectlyTo(xe,ye,ze) #moves rapidly to end position
             time.sleep(0.2)
             # Relax
-            arm.gotoPoint(xi,yi,zi)
+            arm.gotoPoint(xi,yi,zi) #back to starting position
 
     # Check if user wants to quit
     if display_debug:
